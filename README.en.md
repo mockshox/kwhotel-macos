@@ -118,7 +118,7 @@ Expected SHA-256:
 macOS 12 or newer, Apple Silicon or Intel. The first run needs a network connection and about 8 GB free while .NET Framework is installed.
 
 ```bash
-xattr -dr com.apple.quarantine .
+xattr -dr com.apple.quarantine KWHotel.app setup.sh lib assets installer
 ./setup.sh --launch
 ```
 

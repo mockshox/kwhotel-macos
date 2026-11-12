@@ -118,7 +118,7 @@ Pliki `installer/*.exe` są w `.gitignore`.
 macOS 12 lub nowszy, Apple Silicon albo Intel. Pierwsze uruchomienie potrzebuje sieci i około 8 GB wolnego miejsca na czas instalacji .NET Framework.
 
 ```bash
-xattr -dr com.apple.quarantine .
+xattr -dr com.apple.quarantine KWHotel.app setup.sh lib assets installer
 ./setup.sh --launch
 ```
 
