@@ -12,6 +12,9 @@ mkdir -p "$WORK" "$(dirname "$OUT")"
 swiftc -swift-version 5 -O -target arm64-apple-macosx12.0 -o "$WORK/KWHotel-arm64" "$SRC"
 if swiftc -swift-version 5 -O -target x86_64-apple-macosx12.0 -o "$WORK/KWHotel-x64" "$SRC"; then
   lipo -create -output "$WORK/KWHotel" "$WORK/KWHotel-arm64" "$WORK/KWHotel-x64"
+elif [[ "${KWHOTEL_REQUIRE_UNIVERSAL:-}" == 1 ]]; then
+  echo "x86_64 SDK unavailable; a customer build must include Intel and Apple Silicon" >&2
+  exit 1
 else
   echo "x86_64 SDK unavailable; writing an arm64-only app" >&2
   cp "$WORK/KWHotel-arm64" "$WORK/KWHotel"
@@ -68,9 +71,13 @@ STAGE="$WORK/stage"
 rm -rf "$STAGE"
 mkdir -p "$STAGE" "$DIST"
 ditto --norsrc "$ROOT/KWHotel.app" "$STAGE/KWHotel for MacOS.app"
+cp "$ROOT/open-on-mac.txt" "$STAGE/Open on Mac.txt"
 codesign --force --sign - "$STAGE/KWHotel for MacOS.app"
-xattr -cr "$STAGE/KWHotel for MacOS.app"
-COPYFILE_DISABLE=1 ditto -c -k --norsrc --keepParent "$STAGE/KWHotel for MacOS.app" "$DIST/KWHotel-for-MacOS.zip"
+xattr -cr "$STAGE"
+(
+  cd "$STAGE"
+  COPYFILE_DISABLE=1 ditto -c -k --norsrc . "$DIST/KWHotel-for-MacOS.zip"
+)
 mkdir -p "$ROOT/download"
 cp "$DIST/KWHotel-for-MacOS.zip" "$ROOT/download/KWHotel-for-MacOS.zip"
 echo "built $OUT"

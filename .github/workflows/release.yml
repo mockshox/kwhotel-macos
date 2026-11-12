@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/release.yml"
+      - "gui/**"
+      - "setup.sh"
+      - "uninstall.sh"
+      - "lib/**"
+      - "assets/**"
+      - "open-on-mac.txt"
+      - "KWHotel.app/Contents/Info.plist"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        env:
+          KWHOTEL_REQUIRE_UNIVERSAL: "1"
+        run: ./gui/build.sh
+
+      - name: Check the package
+        run: |
+          set -euo pipefail
+          lipo -info "KWHotel.app/Contents/MacOS/KWHotel" | grep -q "arm64"
+          lipo -info "KWHotel.app/Contents/MacOS/KWHotel" | grep -q "x86_64"
+          test -s dist/KWHotel-for-MacOS.zip
+          unzip -l dist/KWHotel-for-MacOS.zip | grep -q "KWHotel for MacOS.app/"
+          unzip -l dist/KWHotel-for-MacOS.zip | grep -q "Open on Mac.txt"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(plutil -extract CFBundleShortVersionString raw "KWHotel.app/Contents/Info.plist")"
+          short="${GITHUB_SHA::7}"
+          tag="v${version}-${short}"
+          cat > "$RUNNER_TEMP/notes.md" <<EOF
+          Built from commit ${GITHUB_SHA}.
+
+          macOS says it could not verify the app. Click Done. The blue button moves it to the Bin. Then, in Terminal, from the folder with the unzipped app:
+
+              xattr -dr com.apple.quarantine "KWHotel for MacOS.app"
+              open "KWHotel for MacOS.app"
+
+          The same steps are in Open on Mac.txt inside the zip. You can also allow it in System Settings → Privacy & Security → Open Anyway.
+          EOF
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" "dist/KWHotel-for-MacOS.zip" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$tag" "dist/KWHotel-for-MacOS.zip" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "KWHotel for MacOS ${version} (${short})" \
+              --notes-file "$RUNNER_TEMP/notes.md" \
+              --latest
+          fi

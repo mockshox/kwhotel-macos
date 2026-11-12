@@ -7,8 +7,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mockshox/kwhotel-macos/raw/main/download/KWHotel-for-MacOS.zip"><img src="https://img.shields.io/badge/Download-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Download KWHotel for MacOS"></a>
+  <a href="https://github.com/mockshox/kwhotel-macos/releases/latest/download/KWHotel-for-MacOS.zip"><img src="https://img.shields.io/badge/Download-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Download KWHotel for MacOS"></a>
 </p>
+
+After downloading, macOS says it could not verify the app. Click **Done**. The blue button moves it to the Bin. Then, in Terminal, from the folder with the unzipped app:
+
+```bash
+xattr -dr com.apple.quarantine "KWHotel for MacOS.app"
+open "KWHotel for MacOS.app"
+```
+
+The same steps are in `Open on Mac.txt` inside the zip. You can also allow it in System Settings → Privacy & Security → Open Anyway.
 
 This launcher runs the Windows [KWHotel Free](https://kwhotel.com/download/kwhotel-free/) desktop app on a Mac through [Wine](https://www.winehq.org/), without a Windows virtual machine.
 
@@ -121,16 +130,9 @@ Expected SHA-256:
 
 macOS 12 or newer, Apple Silicon or Intel. The first run needs a network connection and about 8 GB free while .NET Framework is installed.
 
-Download **KWHotel for MacOS** with the button at the top of this page and unzip it. Open the app and choose the `KWHotel*.exe` installer you downloaded. The window walks through Next: Welcome, Configure, Install, Done. Setup downloads Wine and .NET Framework, takes several minutes, and does not start KWHotel. On the last step, Open KWHotel starts the program when you close the installer.
+Download **KWHotel for MacOS** with the button at the top of this page and unzip it. If macOS refuses to open it, use the command under the button. Then choose the `KWHotel*.exe` installer you downloaded. The window walks through Next: Welcome, Configure, Install, Done. Setup downloads Wine and .NET Framework, takes several minutes, and does not start KWHotel. On the last step, Open KWHotel starts the program when you close the installer.
 
-When macOS blocks an app downloaded from the internet:
-
-```bash
-xattr -dr com.apple.quarantine "KWHotel for MacOS.app"
-open "KWHotel for MacOS.app"
-```
-
-This repository builds that same app. `./gui/build.sh` writes it to `dist/KWHotel-for-MacOS.zip`.
+GitHub Actions builds this app from source and publishes it as a release. The button at the top points at the latest zip. Locally, `./gui/build.sh` writes the same package to `dist/KWHotel-for-MacOS.zip`.
 
 ## Uninstall
 
