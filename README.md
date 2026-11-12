@@ -4,7 +4,7 @@
 
 ![Pomarańczowa ikona KWHotel i niebieska twarz Findera ze wspólnym sercem](assets/logo.jpg)
 
-![Pobierz KWHotel for MacOS](https://img.shields.io/badge/Pobierz-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white)
+[![Pobierz KWHotel for MacOS](https://img.shields.io/badge/Pobierz-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mockshox/kwhotel-macos/releases/latest/download/KWHotel-for-MacOS.zip)
 
 Po rozpakowaniu otwórz **KWHotel for MacOS**. macOS napisze, że nie może zweryfikować programu.
 
