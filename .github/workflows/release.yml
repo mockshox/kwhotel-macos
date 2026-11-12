@@ -10,7 +10,6 @@ on:
       - "uninstall.sh"
       - "lib/**"
       - "assets/**"
-      - "open-on-mac.txt"
       - "KWHotel.app/Contents/Info.plist"
   workflow_dispatch:
 
@@ -36,7 +35,6 @@ jobs:
           lipo -info "KWHotel.app/Contents/MacOS/KWHotel" | grep -q "x86_64"
           test -s dist/KWHotel-for-MacOS.zip
           unzip -l dist/KWHotel-for-MacOS.zip | grep -q "KWHotel for MacOS.app/"
-          unzip -l dist/KWHotel-for-MacOS.zip | grep -q "Open on Mac.txt"
 
       - name: Publish the release
         env:
@@ -49,12 +47,11 @@ jobs:
           cat > "$RUNNER_TEMP/notes.md" <<EOF
           Built from commit ${GITHUB_SHA}.
 
-          macOS says it could not verify the app. Click Done. The blue button moves it to the Bin. Then, in Terminal, from the folder with the unzipped app:
+          macOS says it could not verify the app. Click Done. The blue button moves it to the Bin.
 
-              xattr -dr com.apple.quarantine "KWHotel for MacOS.app"
-              open "KWHotel for MacOS.app"
+          Open System Settings and go to Privacy & Security. A row appears saying KWHotel for MacOS was blocked. Click Open Anyway.
 
-          The same steps are in Open on Mac.txt inside the zip. You can also allow it in System Settings → Privacy & Security → Open Anyway.
+          macOS asks once more. Click Open. If it asks for a password, enter the password for this Mac.
           EOF
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$tag" "dist/KWHotel-for-MacOS.zip" --repo "$GITHUB_REPOSITORY" --clobber

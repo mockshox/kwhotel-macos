@@ -1,6 +1,5 @@
 .cache/
 dist/
-download/
 .DS_Store
 *.log
 installer/*.exe

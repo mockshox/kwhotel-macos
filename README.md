@@ -2,24 +2,29 @@
 
 # KWHotel na macOS
 
-<p align="center">
-  <img src="assets/logo.jpg" alt="Pomarańczowa ikona KWHotel i niebieska twarz Findera ze wspólnym sercem" width="480">
-</p>
+![Pomarańczowa ikona KWHotel i niebieska twarz Findera ze wspólnym sercem](assets/logo.jpg)
 
-<p align="center">
-  <a href="https://github.com/mockshox/kwhotel-macos/releases/latest/download/KWHotel-for-MacOS.zip"><img src="https://img.shields.io/badge/Pobierz-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Pobierz KWHotel for MacOS"></a>
-</p>
+![Pobierz KWHotel for MacOS](https://img.shields.io/badge/Pobierz-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white)
 
-Po pobraniu macOS pokaże, że nie może zweryfikować aplikacji. Kliknij **Gotowe**. Niebieski przycisk przenosi ją do Kosza. Potem w Terminalu, w folderze z rozpakowaną aplikacją:
+Po rozpakowaniu otwórz **KWHotel for MacOS**. macOS napisze, że nie może zweryfikować programu.
 
-```bash
-xattr -dr com.apple.quarantine "KWHotel for MacOS.app"
-open "KWHotel for MacOS.app"
-```
+Kliknij **Gotowe**. Niebieski przycisk przenosi program do Kosza.
 
-To samo jest w pliku `Open on Mac.txt` w zipie. Można też zezwolić w Ustawienia systemowe → Prywatność i ochrona → Otwórz mimo to.
+Otwórz **Ustawienia systemowe** i wejdź w **Prywatność i ochrona**. Pojawi się wiersz, że KWHotel for MacOS został zablokowany. Kliknij **Otwórz mimo to**. Na angielskim macOS ten przycisk nazywa się **Open Anyway**.
 
-Launcher uruchamia windowsowy [KWHotel Free](https://kwhotel.com/pl/pobierz/kwhotel-free/) na Macu przez [Wine](https://www.winehq.org/), bez maszyny wirtualnej z Windowsem.
+![Ustawienia systemowe: Prywatność i ochrona oraz przycisk Otwórz mimo to](assets/open-anyway.png)
+
+macOS zapyta jeszcze raz. Kliknij **Otwórz**. Jeśli poprosi o hasło, wpisz hasło do tego Maca.
+
+Instalacja prowadzi przez cztery kroki.
+
+![Powitanie, Konfiguracja, Instalacja i Koniec](assets/setup.png)
+
+Tak wygląda działający KWHotel Free na MacOS 😎.
+
+![KWHotel Free z otwartym grafikiem rezerwacji](assets/running.png)
+
+Launcher uruchamia windowsowy [KWHotel](https://kwhotel.com/pl/pobierz/kwhotel-free/) na Macu przez [Wine](https://www.winehq.org/), bez maszyny wirtualnej z Windowsem.
 
 To niezależny projekt — nie jest częścią KWHotel ani nie jest powiązany z [KajWare sp. z o.o.](https://kwhotel.com/), producentem programu. Skrypty w tym repozytorium są udostępniane na licencji MIT. Instalator KWHotel nie jest częścią repozytorium.
 
@@ -130,31 +135,9 @@ Pliki `installer/*.exe` są w `.gitignore`.
 
 macOS 12 lub nowszy, Apple Silicon albo Intel. Pierwsze uruchomienie potrzebuje sieci i około 8 GB wolnego miejsca na czas instalacji .NET Framework.
 
-Pobierz **KWHotel for MacOS** przyciskiem na górze strony i rozpakuj zip. Jeśli macOS odmówi otwarcia, użyj polecenia spod przycisku. Potem wskaż pobrany instalator `KWHotel*.exe`. Okno prowadzi krokami Dalej: Powitanie, Konfiguracja, Instalacja, Koniec. Instalacja trwa kilka minut, pobiera Wine oraz .NET Framework i nie uruchamia KWHotel. Na końcu pole „Uruchom KWHotel” otwiera program przy zamknięciu instalatora.
+Pobierz **KWHotel for MacOS** przyciskiem na górze strony i rozpakuj zip. Jeśli macOS odmówi otwarcia, kliknij **Otwórz mimo to** tak, jak na obrazku pod przyciskiem. Potem wskaż pobrany instalator `KWHotel*.exe`. Okno prowadzi krokami Dalej: Powitanie, Konfiguracja, Instalacja, Koniec. Instalacja trwa kilka minut, pobiera Wine oraz .NET Framework i nie uruchamia KWHotel. Na końcu pole „Uruchom KWHotel” otwiera program przy zamknięciu instalatora.
 
 GitHub Actions buduje tę aplikację z kodu źródłowego i publikuje ją jako wydanie. Przycisk na górze strony prowadzi do najnowszego zipa. Lokalnie `./gui/build.sh` składa ten sam pakiet do `dist/KWHotel-for-MacOS.zip`.
-
-## Odinstalowanie
-
-W oknie jest przycisk „Odinstaluj…”. To samo robi skrypt:
-
-```bash
-./uninstall.sh
-```
-
-Skrypt pyta o potwierdzenie. Usuwa prefiks Wine (`~/.wine-kwhotel`), pliki programu (`~/Library/Application Support/KWHotel`), pamięć podręczną instalacji i skrót `~/Desktop/KWHotel.command`. Usuwa też `~/Applications/Wine Crossover.app`, gdy leży tam ta kompilacja. Rosetta zostaje. Folder projektu i instalator `.exe` też zostają.
-
-Baza hotelu leży wśród plików programu. Żeby ją zachować:
-
-```bash
-./uninstall.sh --keep-data
-```
-
-Żeby zostawić Wine:
-
-```bash
-./uninstall.sh --keep-wine
-```
 
 ## Co jest instalowane
 
