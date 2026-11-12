@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mockshox/kwhotel-macos/releases/latest/download/KWHotel-for-MacOS.zip"><img src="https://img.shields.io/badge/Pobierz-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Pobierz KWHotel for MacOS"></a>
+  <a href="https://github.com/mockshox/kwhotel-macos/raw/main/download/KWHotel-for-MacOS.zip"><img src="https://img.shields.io/badge/Pobierz-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Pobierz KWHotel for MacOS"></a>
 </p>
 
 Launcher uruchamia windowsowy [KWHotel Free](https://kwhotel.com/pl/pobierz/kwhotel-free/) na Macu przez [Wine](https://www.winehq.org/), bez maszyny wirtualnej z Windowsem.
