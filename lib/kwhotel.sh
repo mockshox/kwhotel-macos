@@ -6,7 +6,9 @@ SUPPORT="${KWHOTEL_SUPPORT:-$HOME/Library/Application Support/KWHotel}"
 CACHE="${KWHOTEL_CACHE:-$HOME/Library/Caches/kwhotel-setup}"
 WINE_APP="${KWHOTEL_WINE_APP:-$HOME/Applications/Wine Crossover.app}"
 WINE_BIN="$WINE_APP/Contents/Resources/wine/bin"
-WINEPREFIX="${WINEPREFIX:-$HOME/.wine-kwhotel}"
+# Do not inherit WINEPREFIX. Other Wine apps export it, and wineboot would
+# create their prefix instead of this one.
+WINEPREFIX="${KWHOTEL_WINEPREFIX:-$HOME/.wine-kwhotel}"
 LOG="$SUPPORT/setup.log"
 STAMP="$SUPPORT/install-stamp"
 
@@ -154,8 +156,8 @@ wine_env() {
   export PATH="$WINE_BIN:$CACHE/bin:$PATH"
   export WINEPREFIX
   export WINEARCH=win64
-  export WINEDEBUG="${WINEDEBUG:--all}"
-  export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-quartz=n}"
+  export WINEDEBUG="${KWHOTEL_WINEDEBUG:--all}"
+  export WINEDLLOVERRIDES="quartz=n"
 }
 
 ensure_prefix() {
@@ -204,6 +206,11 @@ ensure_overrides() {
 }
 
 find_installer() {
+  if [[ -n "${KWHOTEL_INSTALLER:-}" ]]; then
+    [[ -f "$KWHOTEL_INSTALLER" ]] || die "KWHotel installer not found: $KWHOTEL_INSTALLER"
+    echo "$KWHOTEL_INSTALLER"
+    return 0
+  fi
   local candidate
   for candidate in "$ROOT"/installer/KWHotel*.exe "$ROOT"/KWHotel*.exe; do
     if [[ -f "$candidate" ]]; then
@@ -227,14 +234,18 @@ app_dir_from_stamp() {
 }
 
 resolve_app_dir() {
-  local existing installer tmp extracted
-  if existing="$(app_dir_from_stamp)"; then
-    echo "$existing"
-    return 0
-  fi
-  if [[ -f "$SUPPORT/app/KWHotel.exe" ]]; then
-    echo "$SUPPORT/app"
-    return 0
+  local existing installer tmp extracted exe data_file preserve
+  # A new installer chosen in the window replaces the extracted program.
+  # The stamp and the previous copy would otherwise hide that file.
+  if [[ "${KWHOTEL_REINSTALL:-}" != "1" ]]; then
+    if existing="$(app_dir_from_stamp)"; then
+      echo "$existing"
+      return 0
+    fi
+    if [[ -f "$SUPPORT/app/KWHotel.exe" ]]; then
+      echo "$SUPPORT/app"
+      return 0
+    fi
   fi
   installer="$(find_installer || true)"
   if [[ -n "$installer" ]]; then
@@ -245,22 +256,30 @@ resolve_app_dir() {
     if [[ -f "$tmp/KWHotel.exe" ]]; then
       extracted="$tmp"
     else
-      local exe
       exe="$(find "$tmp" -name KWHotel.exe -maxdepth 3 -print -quit || true)"
       extracted="$(dirname "$exe")"
     fi
     [[ -n "${extracted:-}" && -f "$extracted/KWHotel.exe" ]] || die "installer did not contain KWHotel.exe"
     mkdir -p "$SUPPORT/app"
+    # rsync --delete would drop a database that the installer does not ship.
+    preserve="$tmp/preserve-data"
+    mkdir -p "$preserve"
+    for data_file in KWHotel40.sdf KWHotel.settings KWHotel.ini Dashboard.json; do
+      if [[ -f "$SUPPORT/app/$data_file" ]]; then
+        cp -p "$SUPPORT/app/$data_file" "$preserve/$data_file"
+      fi
+    done
     # Installer plugin folders are not part of the program.
     rsync -a --delete --exclude '$PLUGINSDIR' --exclude '$TEMP' "$extracted"/ "$SUPPORT/app"/
-    rm -rf "$tmp"
-    # Keep a database already created by an older unpack in the home directory.
-    local data_file
     for data_file in KWHotel40.sdf KWHotel.settings KWHotel.ini Dashboard.json; do
+      if [[ ! -f "$SUPPORT/app/$data_file" && -f "$preserve/$data_file" ]]; then
+        cp -p "$preserve/$data_file" "$SUPPORT/app/$data_file"
+      fi
       if [[ -f "$HOME/KWHotel/$data_file" && ! -f "$SUPPORT/app/$data_file" ]]; then
         cp -p "$HOME/KWHotel/$data_file" "$SUPPORT/app/$data_file"
       fi
     done
+    rm -rf "$tmp"
     echo "$SUPPORT/app"
     return 0
   fi
@@ -268,7 +287,7 @@ resolve_app_dir() {
     echo "$HOME/KWHotel"
     return 0
   fi
-  die "KWHotel installer not found. Put KWHotel*.exe in $ROOT/installer/ and run setup again."
+  die "KWHotel installer not found. Choose KWHotel*.exe in KWHotel.app, or put it in $ROOT/installer/ and run setup again."
 }
 
 write_stamp() {
@@ -312,7 +331,20 @@ setup_all() {
     export PATH="/usr/local/bin:$PATH"
   fi
   export PATH="$CACHE/bin:$PATH"
-  xattr -dr com.apple.quarantine "$ROOT" 2>/dev/null || true
+  local bundle=""
+  if [[ -d "$ROOT/KWHotel.app" ]]; then
+    bundle="$ROOT/KWHotel.app"
+  else
+    local contents parent
+    contents="$(cd "$ROOT/.." && pwd)"
+    parent="$(dirname "$contents")"
+    if [[ "$(basename "$contents")" == "Contents" && "$parent" == *.app ]]; then
+      bundle="$parent"
+    fi
+  fi
+  if [[ -n "$bundle" ]]; then
+    xattr -dr com.apple.quarantine "$bundle" 2>/dev/null || true
+  fi
   log "KWHotel macOS setup"
   ensure_rosetta
   ensure_cabextract
@@ -324,10 +356,10 @@ setup_all() {
   local app_dir
   app_dir="$(resolve_app_dir)"
   write_stamp "$app_dir"
-  # The launcher bundle is unsigned when copied to another Mac.
-  if [[ -d "$ROOT/KWHotel.app" ]]; then
-    xattr -dr com.apple.quarantine "$ROOT/KWHotel.app" 2>/dev/null || true
-    codesign --force --deep -s - "$ROOT/KWHotel.app" >/dev/null 2>&1 || true
+  # A downloaded copy is quarantined and unsigned for the new Mac.
+  if [[ -n "$bundle" ]]; then
+    xattr -dr com.apple.quarantine "$bundle" 2>/dev/null || true
+    codesign --force --deep -s - "$bundle" >/dev/null 2>&1 || true
   fi
   log "ready. App: $app_dir"
   log "prefix: $WINEPREFIX"

@@ -6,6 +6,10 @@
   <img src="assets/logo.jpg" alt="The orange KWHotel icon and the blue Finder face sharing a heart" width="480">
 </p>
 
+<p align="center">
+  <a href="https://github.com/mockshox/kwhotel-macos/releases/latest/download/KWHotel-for-MacOS.zip"><img src="https://img.shields.io/badge/Download-KWHotel%20for%20MacOS-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Download KWHotel for MacOS"></a>
+</p>
+
 This launcher runs the Windows [KWHotel Free](https://kwhotel.com/download/kwhotel-free/) desktop app on a Mac through [Wine](https://www.winehq.org/), without a Windows virtual machine.
 
 This is an independent project. It is not part of KWHotel and it is not affiliated with [KajWare sp. z o.o.](https://kwhotel.com/), the company that publishes the program. The scripts in this repository are released under the MIT license. The KWHotel installer is not part of the repository.
@@ -79,7 +83,7 @@ KajWare publishes the Free 0.47 installer from the buttons on these pages:
 - International: <https://kwhotel.com/download/kwhotel-free/>
 - Polish: <https://kwhotel.com/pl/pobierz/kwhotel-free/>
 
-Those buttons currently return `KWHotel_0_47_211.exe`. `setup.sh` accepts any `installer/KWHotel*.exe`.
+Those buttons currently return `KWHotel_0_47_211.exe`. The installer window accepts the `.exe` you point at. `setup.sh` also accepts any `installer/KWHotel*.exe`.
 
 International build:
 
@@ -117,12 +121,38 @@ Expected SHA-256:
 
 macOS 12 or newer, Apple Silicon or Intel. The first run needs a network connection and about 8 GB free while .NET Framework is installed.
 
+Download **KWHotel for MacOS** with the button at the top of this page and unzip it. Open the app and choose the `KWHotel*.exe` installer you downloaded. The window walks through Next: Welcome, Configure, Install, Done. Setup downloads Wine and .NET Framework, takes several minutes, and does not start KWHotel. On the last step, Open KWHotel starts the program when you close the installer.
+
+When macOS blocks an app downloaded from the internet:
+
 ```bash
-xattr -dr com.apple.quarantine KWHotel.app setup.sh lib assets installer
-./setup.sh --launch
+xattr -dr com.apple.quarantine "KWHotel for MacOS.app"
+open "KWHotel for MacOS.app"
 ```
 
-`setup.sh` can be run again. It skips Wine, the prefix, and .NET Framework when they are already the expected versions. After that, double-click `KWHotel.app`.
+This repository builds that same app. `./gui/build.sh` writes it to `dist/KWHotel-for-MacOS.zip`.
+
+## Uninstall
+
+The window has an “Uninstall…” button. The script does the same:
+
+```bash
+./uninstall.sh
+```
+
+The script asks for confirmation. It removes the Wine prefix (`~/.wine-kwhotel`), the program files (`~/Library/Application Support/KWHotel`), the setup cache, and the `~/Desktop/KWHotel.command` shortcut. It also removes `~/Applications/Wine Crossover.app` when that build is installed there. Rosetta stays. The project folder and the `.exe` installer stay too.
+
+The hotel database lives with the program files. To keep it:
+
+```bash
+./uninstall.sh --keep-data
+```
+
+To leave Wine in place:
+
+```bash
+./uninstall.sh --keep-wine
+```
 
 ## What gets installed
 
