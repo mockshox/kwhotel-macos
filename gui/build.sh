@@ -27,7 +27,40 @@ cp "$ROOT/lib/kwhotel.sh" "$RES/lib/kwhotel.sh"
 cp "$ROOT/assets/logo.jpg" "$RES/logo.jpg"
 chmod +x "$RES/setup.sh" "$RES/uninstall.sh"
 
-# Sign after the scripts are inside the bundle.
+swiftc -O -o "$WORK/make-icon" "$ROOT/gui/make-icon.swift"
+"$WORK/make-icon" "$ROOT/assets/logo.jpg" "$WORK/icon-1024.png"
+ICONSET="$WORK/AppIcon.iconset"
+rm -rf "$ICONSET"
+mkdir -p "$ICONSET"
+for size in 16 32 128 256 512; do
+  sips -z "$size" "$size" "$WORK/icon-1024.png" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
+  double=$((size * 2))
+  sips -z "$double" "$double" "$WORK/icon-1024.png" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
+done
+python3 - "$ICONSET" "$RES/AppIcon.icns" <<'PY'
+import struct, sys
+from pathlib import Path
+iconset, dest = Path(sys.argv[1]), Path(sys.argv[2])
+chunks = [
+    ("icp4", "icon_16x16.png"),
+    ("ic11", "icon_16x16@2x.png"),
+    ("icp5", "icon_32x32.png"),
+    ("ic12", "icon_32x32@2x.png"),
+    ("ic07", "icon_128x128.png"),
+    ("ic13", "icon_128x128@2x.png"),
+    ("ic08", "icon_256x256.png"),
+    ("ic14", "icon_256x256@2x.png"),
+    ("ic09", "icon_512x512.png"),
+    ("ic10", "icon_512x512@2x.png"),
+]
+body = b""
+for kind, name in chunks:
+    data = (iconset / name).read_bytes()
+    body += kind.encode("ascii") + struct.pack(">I", len(data) + 8) + data
+dest.write_bytes(b"icns" + struct.pack(">I", len(body) + 8) + body)
+PY
+
+# Sign after the scripts and icon are inside the bundle.
 codesign --force --sign - "$ROOT/KWHotel.app"
 
 DIST="$ROOT/dist"
