@@ -1,0 +1,27 @@
+#!/bin/bash
+# SPDX-License-Identifier: MIT
+# Double-click launcher. First run opens Terminal so the install log is visible.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+# shellcheck source=../../../lib/kwhotel.sh
+source "$ROOT/lib/kwhotel.sh"
+
+if ! is_ready; then
+  cmd="exec $(printf '%q' "$ROOT/setup.sh") --launch"
+  if osascript -e 'on run argv
+  tell application "Terminal"
+    activate
+    do script (item 1 of argv)
+  end tell
+end run' "$cmd"
+  then
+    exit 0
+  fi
+  mkdir -p "$SUPPORT"
+  echo "Terminal automation was denied. Installing in this window's log: $LOG" >&2
+  "$ROOT/setup.sh" --launch >>"$LOG" 2>&1
+  exit 0
+fi
+
+launch_kwhotel

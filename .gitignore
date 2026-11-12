@@ -1,0 +1,4 @@
+.cache/
+*.log
+installer/*.exe
+KWHotel.app/Contents/_CodeSignature/
